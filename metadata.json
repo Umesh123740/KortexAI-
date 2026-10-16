@@ -1,0 +1,6 @@
+{
+  "name": "Kortex AI",
+  "description": "An AI-powered doubt-solving app for students to learn in their own language.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,29 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user account details and settings",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Firebase Auth UID" },
+        "name": { "type": "string", "description": "Full name" },
+        "language": { "type": "string", "description": "Preferred language" },
+        "board": { "type": "string", "description": "Education board" },
+        "className": { "type": "string", "description": "Class or degree" },
+        "isPro": { "type": "boolean", "description": "Subscription status" },
+        "mobileNumber": { "type": "string", "description": "User's mobile number" },
+        "profilePicture": { "type": "string", "description": "Optional profile photo URL" },
+        "isOnboarded": { "type": "boolean", "description": "Flag for profile completion" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation. Use FieldValue.serverTimestamp()." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Timestamp of last update. Use FieldValue.serverTimestamp()." }
+      },
+      "required": ["userId", "name", "language", "board", "className", "isPro", "mobileNumber", "isOnboarded", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Individual user profiles scoped by UID"
+    }
+  }
+}

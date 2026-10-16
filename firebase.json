@@ -1,0 +1,19 @@
+{
+  "firestore": [
+    {
+      "database": "ai-studio-android-kortexai-cbbbe718-9056-487a-b8e5-527c001f91b9",
+      "rules": "firestore.rules"
+    }
+  ],
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8085
+    },
+    "ui": {
+      "enabled": true
+    }
+  }
+}

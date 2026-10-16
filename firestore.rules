@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Global Helpers
+    function isSignedIn() { return request.auth != null; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isOwner(userId) { return request.auth.uid == userId; }
+
+    // 3. Validation Helpers
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.language is string && data.language.size() <= 50 &&
+             data.board is string && data.board.size() <= 100 &&
+             data.className is string && data.className.size() <= 50 &&
+             data.isPro is bool &&
+             data.mobileNumber is string && data.mobileNumber.size() <= 20 &&
+             (!('profilePicture' in data) || data.profilePicture == null || (data.profilePicture is string && data.profilePicture.size() <= 1000)) &&
+             data.isOnboarded is bool &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // 4. Collection Rules
+    match /users/{userId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      
+      allow create: if isSignedIn() && isOwner(userId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['userId', 'name', 'language', 'board', 'className', 'isPro', 'mobileNumber', 'isOnboarded', 'createdAt', 'updatedAt']) &&
+                       isValidUserProfile(incoming());
+
+      allow update: if isSignedIn() && isOwner(userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['name', 'language', 'board', 'className', 'isPro', 'mobileNumber', 'profilePicture', 'isOnboarded', 'updatedAt']);
+      
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+  }
+}
