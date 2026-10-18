@@ -1,0 +1,30 @@
+{
+  "science": [
+    {
+      "title": "Human Digestive System",
+      "description": "A detailed look at how our body processes food.",
+      "topic": "Biology",
+      "tags": ["Anatomy", "Digestion"]
+    },
+    {
+      "title": "Laws of Motion",
+      "description": "Newton's three laws that govern the physical world.",
+      "topic": "Physics",
+      "tags": ["Newton", "Mechanics"]
+    }
+  ],
+  "commerce": [
+    {
+      "title": "Stock Market Basics",
+      "description": "Understanding Equity, Bull & Bear markets.",
+      "topic": "Finance",
+      "tags": ["Investing", "Stocks"]
+    },
+    {
+      "title": "Principles of Management",
+      "description": "Henry Fayol's 14 principles for efficient business.",
+      "topic": "Business Studies",
+      "tags": ["Management", "Strategy"]
+    }
+  ]
+}

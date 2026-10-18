@@ -292,6 +292,9 @@ fun KortexApp() {
                     composable<Screen.Visuals> {
                         VisualsScreen(viewModel, navController)
                     }
+                    composable<Screen.Library> {
+                        LibraryScreen(viewModel, navController)
+                    }
                 }
             }
         }
@@ -303,6 +306,7 @@ fun shouldShowBottomBar(route: String?): Boolean {
             route?.contains("MyDoubts") == true ||
             route?.contains("Streak") == true ||
             route?.contains("Notifications") == true ||
+            route?.contains("Library") == true ||
             route?.contains("Profile") == true
 }
 
@@ -328,20 +332,39 @@ fun BottomNavigationBar(navController: NavHostController) {
             .padding(horizontal = 16.dp, vertical = 16.dp)
             .height(64.dp)
             .clip(RoundedCornerShape(28.dp))
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.4f))
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
                 shape = RoundedCornerShape(28.dp)
             )
             .shadow(
-                elevation = 8.dp,
+                elevation = 12.dp,
                 shape = RoundedCornerShape(28.dp),
                 clip = false,
-                ambientColor = Color.Black.copy(alpha = 0.1f),
-                spotColor = Color.Black.copy(alpha = 0.1f)
+                ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
             )
     ) {
+        // Glass Background with Morphing Shapes
+        val infiniteTransition = rememberInfiniteTransition(label = "glass_nav")
+        val animX by infiniteTransition.animateFloat(
+            initialValue = 0f, targetValue = 1f,
+            animationSpec = infiniteRepeatable(tween(10000, easing = LinearEasing), RepeatMode.Reverse), label = "x"
+        )
+        
+        androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize().blur(30.dp)) {
+            drawCircle(
+                color = Color(0xFF4C9BFF).copy(alpha = 0.15f),
+                radius = size.width * 0.4f,
+                center = androidx.compose.ui.geometry.Offset(size.width * animX, size.height * 0.5f)
+            )
+            drawCircle(
+                color = Color(0xFF00C853).copy(alpha = 0.1f),
+                radius = size.width * 0.3f,
+                center = androidx.compose.ui.geometry.Offset(size.width * (1f - animX), size.height * 0.8f)
+            )
+        }
         // Morphing Pill
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val itemWidth = maxWidth / items.size
@@ -427,6 +450,7 @@ fun AppDrawer(
 ) {
     val userProfile by viewModel.userProfile.collectAsStateWithLifecycle()
     val doubts by viewModel.allDoubts.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     var showAccountSheet by remember { mutableStateOf(false) }
 
     if (showAccountSheet) {
@@ -489,6 +513,12 @@ fun AppDrawer(
             DrawerItem(Icons.Default.Bookmark, "Saved Solutions") { onClose(); navController.navigate(Screen.MyDoubts) }
             DrawerItem(Icons.Default.AutoAwesome, "AI Visuals") { onClose(); navController.navigate(Screen.Visuals) }
             DrawerItem(Icons.Default.Groups, "Study Groups", hasProBadge = true) { onClose(); navController.navigate(Screen.StudyGroups) }
+            DrawerItem(Icons.Default.Download, "Download APK") { 
+                onClose()
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ranjeet-alamani/Kortex-AI/releases"))
+                context.startActivity(intent)
+            }
+            DrawerItem(Icons.Default.LibraryBooks, "Assets Library") { onClose(); navController.navigate(Screen.Library) }
             DrawerItem(Icons.Default.Settings, "Settings") { onClose(); navController.navigate(Screen.Profile) }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -1145,7 +1175,7 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavHostController, onOpe
                     .fillMaxWidth()
                     .padding(18.dp)
                     .clickable { navController.navigate(Screen.AskDoubt) },
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSurface),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Row(
@@ -1166,7 +1196,7 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavHostController, onOpe
                     .fillMaxWidth()
                     .padding(horizontal = 18.dp)
                     .clickable { navController.navigate(Screen.Visuals) },
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)),
                 shape = RoundedCornerShape(16.dp),
                 border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f))
             ) {
@@ -1215,7 +1245,7 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavHostController, onOpe
         }
 
         item {
-            Text("Subjects", modifier = Modifier.padding(18.dp, 18.dp, 18.dp, 8.dp), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text("Subjects", modifier = Modifier.padding(18.dp, 18.dp, 18.dp, 8.dp), fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
             val subjects = listOf("Math", "Science", "English", "Social Sci", "Hindi", "More")
             val icons = listOf("📐", "🧪", "📖", "🌍", "✍️", "➕")
             
@@ -1231,7 +1261,7 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavHostController, onOpe
         }
 
         item {
-            Text("Recent Doubts", modifier = Modifier.padding(18.dp, 24.dp, 18.dp, 8.dp), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text("Recent Doubts", modifier = Modifier.padding(18.dp, 24.dp, 18.dp, 8.dp), fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
         }
 
         items(doubts.take(3)) { doubt ->
@@ -2492,6 +2522,7 @@ fun VisualsScreen(viewModel: MainViewModel, navController: NavHostController) {
     var selectedSubject by remember { mutableStateOf("Science") }
     val isGenerating by viewModel.isGeneratingVisual.collectAsStateWithLifecycle()
     val generatedImage by viewModel.generatedInfographic.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         TopAppBar(
@@ -2581,9 +2612,28 @@ fun VisualsScreen(viewModel: MainViewModel, navController: NavHostController) {
                             )
                             
                             // Share/Download buttons
-                            Box(modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
+                            Row(
+                                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
                                 FloatingActionButton(
-                                    onClick = { /* Download logic */ },
+                                    onClick = { 
+                                        val sendIntent: Intent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            putExtra(Intent.EXTRA_TEXT, "Check out this AI-generated infographic on $topic! #KortexAI")
+                                            type = "text/plain"
+                                        }
+                                        val shareIntent = Intent.createChooser(sendIntent, null)
+                                        context.startActivity(shareIntent)
+                                    },
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    modifier = Modifier.size(48.dp)
+                                ) {
+                                    Icon(Icons.Default.Share, null)
+                                }
+                                
+                                FloatingActionButton(
+                                    onClick = { /* Download logic - placeholder */ },
                                     containerColor = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(48.dp)
                                 ) {
@@ -2639,50 +2689,76 @@ fun DiffusionLoop() {
         label = "progress"
     )
 
+    val color1 = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+    val color2 = MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f)
+    val color3 = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)
+
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
             val height = size.height
-            val random = java.util.Random(1234)
+            val time = progress * 2 * Math.PI.toFloat()
             
-            // Draw noise that gradually patterns
-            for (i in 0..500) {
-                val x = random.nextFloat() * width
-                val y = random.nextFloat() * height
-                val radius = (random.nextFloat() * 20f + 10f) * (1f - progress)
-                val alpha = random.nextFloat() * 0.5f + 0.2f
-                
-                drawCircle(
-                    color = Color.White.copy(alpha = alpha),
-                    radius = radius,
-                    center = androidx.compose.ui.geometry.Offset(x, y)
+            // Draw morphing gradients
+            drawCircle(
+                color = color1,
+                radius = (width * 0.5f) * (1f + 0.1f * Math.sin(time.toDouble()).toFloat()),
+                center = androidx.compose.ui.geometry.Offset(
+                    x = width * (0.4f + 0.1f * Math.cos(time.toDouble()).toFloat()),
+                    y = height * (0.4f + 0.1f * Math.sin(time.toDouble()).toFloat())
                 )
-            }
+            )
             
-            // Draw structured lines that pulse
-            for (i in 0..10) {
-                val alpha = (Math.sin((progress * 2 * Math.PI) + i).toFloat() + 1f) / 4f
-                drawLine(
-                    color = Color.White.copy(alpha = alpha),
-                    start = androidx.compose.ui.geometry.Offset(0f, height * i / 10f),
-                    end = androidx.compose.ui.geometry.Offset(width, height * i / 10f + random.nextFloat() * 50f),
-                    strokeWidth = 2f
+            drawCircle(
+                color = color2,
+                radius = (width * 0.45f) * (1f + 0.1f * Math.cos(time.toDouble() * 1.5).toFloat()),
+                center = androidx.compose.ui.geometry.Offset(
+                    x = width * (0.6f + 0.1f * Math.sin(time.toDouble() * 1.2).toFloat()),
+                    y = height * (0.6f + 0.1f * Math.cos(time.toDouble() * 1.3).toFloat())
                 )
-            }
+            )
+            
+            drawCircle(
+                color = color3,
+                radius = (width * 0.4f) * (1f + 0.1f * Math.sin(time.toDouble() * 0.8).toFloat()),
+                center = androidx.compose.ui.geometry.Offset(
+                    x = width * (0.5f + 0.2f * Math.cos(time.toDouble() * 0.5).toFloat()),
+                    y = height * (0.5f + 0.2f * Math.sin(time.toDouble() * 0.7).toFloat())
+                )
+            )
         }
         
+        // Blurred overlay for "diffusion" feel
+        Box(modifier = Modifier.fillMaxSize().blur(60.dp).background(MaterialTheme.colorScheme.background.copy(alpha = 0.2f)))
+        
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            CircularProgressIndicator(modifier = Modifier.size(48.dp))
-            Spacer(modifier = Modifier.height(16.dp))
+            Box(contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.size(80.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 4.dp,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+                )
+                Icon(
+                    Icons.Default.AutoAwesome, 
+                    null, 
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
-                "Refining visual details...",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                "Synthesizing visual concepts...",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
             )
             Text(
-                "Applying diffusion steps ${ (progress * 100).toInt() }%",
+                "Step ${((progress * 100).toInt())} of 100",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -2695,7 +2771,98 @@ fun TopAppBar(title: @Composable () -> Unit, navigationIcon: @Composable () -> U
         title = title,
         navigationIcon = navigationIcon,
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
-        )
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
+        ),
+        modifier = Modifier.blur(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) 20.dp else 0.dp)
     )
+}
+
+@Composable
+fun LibraryScreen(viewModel: MainViewModel, navController: NavHostController) {
+    val context = LocalContext.current
+
+    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        TopAppBar(
+            title = { Text("Assets Library") },
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) }
+            }
+        )
+
+        LazyColumn(modifier = Modifier.fillMaxSize().padding(18.dp)) {
+            item {
+                Text("Educational Assets", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+                Text("Explore infographics and application binaries.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            item {
+                AssetSectionHeader("Science Resources", "🧪")
+                AssetItemCard("Human Digestive System", "High-quality diagram for biological studies.")
+                AssetItemCard("Laws of Motion", "Physics fundamentals explained visually.")
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            item {
+                AssetSectionHeader("Commerce Resources", "📊")
+                AssetItemCard("Stock Market Basics", "Financial literacy for beginners.")
+                AssetItemCard("Principles of Management", "Core business strategies.")
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            item {
+                AssetSectionHeader("App Binaries (APK)", "📱")
+                Card(
+                    modifier = Modifier.fillMaxWidth().clickable {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ranjeet-alamani/Kortex-AI/releases"))
+                        context.startActivity(intent)
+                    },
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.CloudDownload, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(32.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Download Latest APK", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text("Access all versions on GitHub Assets library", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
+                        }
+                        Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                    }
+                }
+                Spacer(modifier = Modifier.height(48.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun AssetSectionHeader(title: String, emoji: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 12.dp)) {
+        Text(emoji, fontSize = 20.sp)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+@Composable
+fun AssetItemCard(title: String, description: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(14.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+    ) {
+        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.InsertDriveFile, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(title, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text(description, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            IconButton(onClick = { /* View logic */ }) {
+                Icon(Icons.Default.Visibility, null, modifier = Modifier.size(20.dp))
+            }
+        }
+    }
 }

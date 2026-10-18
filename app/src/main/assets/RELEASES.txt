@@ -1,0 +1,11 @@
+Kortex AI - APK Releases
+------------------------
+
+All latest APK files are available in the GitHub Assets library:
+https://github.com/ranjeet-alamani/Kortex-AI/releases
+
+You can download:
+- app-debug.apk (For testing)
+- app-release.apk (For production)
+
+The GitHub Action in .github/workflows/build-apk.yml automatically builds and uploads these files on every push to main.

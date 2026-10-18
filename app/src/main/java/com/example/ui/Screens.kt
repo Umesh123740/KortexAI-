@@ -21,4 +21,5 @@ sealed interface Screen {
     @Serializable data class DoubtDetail(val doubtId: Long) : Screen
     @Serializable data object StudyGroups : Screen
     @Serializable data object Visuals : Screen
+    @Serializable data object Library : Screen
 }
